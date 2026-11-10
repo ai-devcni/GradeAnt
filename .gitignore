@@ -1,0 +1,22 @@
+.venv/
+venv/
+build/
+__pycache__/
+*.py[cod]
+
+# CMake-generated files
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+
+# Native build artifacts
+*.dll
+*.so
+*.dylib
+*.lib
+*.pdb
+
+# OS metadata
+.DS_Store
+Thumbs.db
