@@ -1,5 +1,8 @@
 # GradeAnt
 
+[!WARNING]
+**This project is a Work in Progress (WIP).** Core features are actively being developed, and breaking changes may occur. Contributions are highly welcome!
+
 GradeAnt is a small cross-platform desktop prototype that converts UI layout images into editable HTML using a CPU-only OpenCV library and a Python `customtkinter` interface. The native implementation uses C++20.
 
 ## Build the native compiler
