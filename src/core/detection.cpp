@@ -51,6 +51,7 @@ std::vector<DetectedRegion> detect_regions(const cv::Mat& image) {
         const cv::Rect box = cv::boundingRect(contour);
         const Bounds bounds{box.x, box.y, box.width, box.height};
         const auto box_area = area(bounds);
+        // Discard tiny contours and near-full-image regions before classifying their shape.
         if (box.width < 18 || box.height < 12 || box_area < 220 || box_area > image_area * 0.92) continue;
         const double ratio = static_cast<double>(box.width) / box.height;
         std::string type = "container";
@@ -64,6 +65,7 @@ std::vector<DetectedRegion> detect_regions(const cv::Mat& image) {
     });
     std::vector<DetectedRegion> unique;
     for (const auto& region : regions) {
+        // RETR_LIST may return several nearby contours for one visual region.
         const bool duplicate = std::any_of(unique.begin(), unique.end(), [&](const DetectedRegion& kept) {
             return std::abs(kept.bounds.x - region.bounds.x) <= 3 &&
                    std::abs(kept.bounds.y - region.bounds.y) <= 3 &&
@@ -74,6 +76,7 @@ std::vector<DetectedRegion> detect_regions(const cv::Mat& image) {
         if (unique.size() >= 250) break;
     }
 
+    // Choose the smallest enclosing region so nested HTML follows the nearest detected parent.
     for (std::size_t child = 0; child < unique.size(); ++child) {
         std::int64_t smallest_area = std::numeric_limits<std::int64_t>::max();
         for (std::size_t candidate = 0; candidate < unique.size(); ++candidate) {
@@ -111,6 +114,7 @@ Layout infer_layout(const Bounds& parent, const std::vector<const DetectedRegion
         vertical = vertical && horizontal_delta <= std::max(4.0, std::min(previous.width, current.width) * 0.2) &&
                    current.y >= previous.y + previous.height;
     }
+    // Infer flow only when every adjacent pair supports the same alignment and ordering.
     if (horizontal) result.kind = LayoutKind::horizontal;
     else if (vertical) result.kind = LayoutKind::vertical;
     else return result;
@@ -134,6 +138,7 @@ Component make_component(const DetectedRegion& region, const std::vector<Detecte
     component.id = "component-" + std::to_string(index + 1);
     component.type = region.type;
     component.bounds = region.bounds;
+    // This is a conservative heuristic score, not a measured accuracy value.
     component.confidence = 0.35;
     component.style.background = "#ffffff";
     component.style.border_color = "#cbd5e1";

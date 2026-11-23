@@ -11,6 +11,7 @@ namespace gradeant {
 namespace {
 
 std::string escape_json(const std::string& value) {
+    // JSON strings require escaped quotes, backslashes, and control characters.
     std::ostringstream escaped;
     for (const unsigned char character : value) {
         switch (character) {
@@ -44,6 +45,7 @@ void write_layout(std::ostream& output, const Layout& layout) {
 }
 
 void write_component(std::ostream& output, const Component& component) {
+    // Keep this recursive representation aligned with the documented v1 JSON Schema.
     output << "{\"id\":";
     write_string(output, component.id);
     output << ",\"type\":";

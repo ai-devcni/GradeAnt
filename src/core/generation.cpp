@@ -10,6 +10,7 @@ namespace gradeant {
 namespace {
 
 std::string html_escape(const std::string& value) {
+    // Component text and identifiers enter HTML text and attribute contexts.
     std::string escaped;
     for (const char character : value) {
         switch (character) {
@@ -25,6 +26,7 @@ std::string html_escape(const std::string& value) {
 }
 
 bool safe_hex_colour(const std::string& value) {
+    // Accept only colour tokens that cannot introduce additional CSS declarations.
     if (value.empty() || value[0] != '#') return false;
     const std::size_t digits = value.size() - 1;
     if (digits != 3 && digits != 4 && digits != 6 && digits != 8) return false;
@@ -49,6 +51,7 @@ void write_layout_css(std::ostream& css, const char* selector, const Layout& lay
 
 Layout effective_layout(Layout layout, std::size_t child_count, ReconstructionProfile profile) {
     if (profile == ReconstructionProfile::fidelity) return Layout{};
+    // Semantic mode uses normal vertical flow only when no stronger group was inferred.
     if (profile == ReconstructionProfile::semantic &&
         layout.kind == LayoutKind::absolute && child_count > 1) {
         layout.kind = LayoutKind::vertical;
@@ -67,6 +70,7 @@ void write_size(std::ostream& css, const Bounds& bounds, const Bounds& parent,
     css << "  width: " << std::fixed << std::setprecision(4) << width << "%;\n"
         << "  height: " << height << "%;\n";
     if (parent_layout == LayoutKind::horizontal && siblings > 1) {
+        // Share the measured gap across flex bases so CSS gap is not added on top of widths.
         const double share = static_cast<double>(gap) * (siblings - 1) / siblings;
         css << "  flex: 0 0 calc(" << width << "% - " << std::setprecision(2) << share << "px);\n";
     } else if (parent_layout == LayoutKind::vertical && siblings > 1) {
@@ -157,6 +161,7 @@ void write_component_css_tree(std::ostream& css, const Component& component, con
     const auto component_layout = effective_layout(component.layout, component.children.size(), profile);
     write_component_css(css, component, parent, parent_layout, siblings, parent_gap, current, profile,
                         component_layout);
+    // Match HTML's preorder traversal so each generated selector targets the intended component.
     for (const auto& child : component.children)
         write_component_css_tree(css, child, component.bounds, component_layout.kind,
                                  static_cast<int>(component.children.size()), component_layout.gap,

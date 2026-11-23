@@ -9,6 +9,7 @@ namespace gradeant {
 inline constexpr int ir_schema_version = 1;
 
 struct Bounds {
+    // Coordinates are relative to the source document, including for nested components.
     int x{};
     int y{};
     int width{};
@@ -31,6 +32,7 @@ struct VisualStyle {
 };
 
 struct Layout {
+    // Describes how this component arranges its direct children.
     LayoutKind kind{LayoutKind::absolute};
     int gap{};
     int columns{};

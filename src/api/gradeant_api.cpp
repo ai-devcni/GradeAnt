@@ -16,6 +16,7 @@ struct GradeAntResult {
 };
 
 namespace {
+// Error text is borrowed across the C ABI, so keep its storage isolated per calling thread.
 thread_local std::string error_buffer;
 thread_local int32_t error_code = GRADEANT_STATUS_SUCCESS;
 
@@ -92,6 +93,7 @@ extern "C" GRADEANT_API int32_t gradeant_compile_image_v1(
         if (options != nullptr && options->progress_callback != nullptr)
             options->progress_callback(85, "Validating interface", options->user_data);
         compiled->ir_json = gradeant::to_json(compiled->document);
+        // Transfer ownership only after callbacks finish, leaving the output null on failure.
         if (options != nullptr && options->progress_callback != nullptr)
             options->progress_callback(100, "Compilation complete", options->user_data);
         *result = compiled.release();

@@ -5,6 +5,7 @@
 
 namespace {
 using ResultPointer = std::unique_ptr<GradeAntResult, decltype(&gradeant_result_release)>;
+// Preserve the legacy return-pointer lifetime until the next call on this thread.
 thread_local ResultPointer legacy_result(nullptr, &gradeant_result_release);
 }
 

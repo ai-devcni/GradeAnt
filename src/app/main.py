@@ -33,13 +33,16 @@ CARD = "#2D2D2D"
 BLUE = "#007AFF"
 
 
+# The native library owns this opaque result; Python only passes its pointer back to the API.
 class _GradeAntResult(ctypes.Structure):
     pass
 
 
+# Match the native GradeAntResult pointer used by the C ABI.
 _GradeAntResultPointer = ctypes.POINTER(_GradeAntResult)
 
 
+# Keep these field widths and order aligned with the versioned structs in gradeant_api.h.
 class _CompileOptions(ctypes.Structure):
     _fields_ = [
         ("struct_size", ctypes.c_uint32),
@@ -103,6 +106,7 @@ class CompilerLibrary:
         if not result:
             raise RuntimeError("The native compiler returned success without a compilation result.")
         try:
+            # c_char_p copies the borrowed native JSON string into Python bytes here.
             raw_ir = self._get_ir(result)
             if raw_ir is None:
                 raw_error = self._get_error()
@@ -141,6 +145,7 @@ class GradeAntApp(ctk.CTk):
         self.configure(fg_color=BG)
         self.compiler: CompilerLibrary | None = None
         self.image_path: Path | None = None
+        # Retain the native result so profile changes regenerate output without re-detection.
         self.compiled_result: _GradeAntResultPointer | None = None
         self.ir_data: dict | None = None
         self.preview_photo: PhotoImage | None = None
